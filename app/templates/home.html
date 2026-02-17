@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-form">
+    <form action="{% url 'library:search' %}" method="get">
+        <h2>Search for Books</h2>
+
+        <div style="margin: 15px 0;">
+            <label>
+                <input type="radio" name="type" value="title" checked>
+                Search by Title
+            </label>
+            <label style="margin-left: 20px;">
+                <input type="radio" name="type" value="genre">
+                Search by Genre
+            </label>
+        </div>
+
+        <div style="margin: 15px 0;">
+            <input type="text"
+                   name="q"
+                   placeholder="Enter book title or genre..."
+                   style="width: 70%; padding: 8px; font-size: 16px;">
+            <button type="submit" style="padding: 8px 20px; font-size: 16px;">
+                Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<div>
+    <h3>Available Genres:</h3>
+    <ul>
+        {% for genre in genres %}
+            <li>{{ genre }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
