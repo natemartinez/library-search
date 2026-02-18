@@ -6,6 +6,7 @@ import re
 
 # Library data (from main.py prototype)
 # Later, this needs to be a database model in `models.py`
+# from an API maybe?
 LIBRARY = {
     'Science Fiction': {
         'book1': {
@@ -27,6 +28,12 @@ LIBRARY = {
             'author': 'C.S Lewis',
         },
     },
+    'Fiction': {
+        'book1': {
+            'name': 'The Great Gatsby',
+            'author': 'F. Scott Fitzgerald'
+        }
+    }
 }
 
 
@@ -63,14 +70,46 @@ def search(request):
     # - Remember to handle the case when search_query is empty
 
     if search_type == 'title':
-        for index, genres in LIBRARY.items():
-            for book_id, book in genres.items():
+        for index, genre in LIBRARY.items():
+            for book_id, book in genre.items():
              match = re.search(search_query, book["name"])
              if match:
                 results.append(book)
 
+    if search_type == 'genre':
+       for genre_name in LIBRARY.keys():
+           match = re.search(search_query, genre_name, re.IGNORECASE)
+           if match: 
+               genre_obj = {
+                  'genre_name': genre_name,
+                  'books': []
+               }
+               # results.append(f"{genre_name}") # use multi-line to match pseudocode
+               for book in LIBRARY[genre_name].values():     
+                   genre_obj['books'].append(book)
+
+               results.append(genre_obj) 
+   
     print(results)
 
+    '''
+        Results NEEDS TO CHANGE TO DISPLAY EACH GENRE AS A HEADING SEPARATOR:
+        This is what should be returned:
+
+        results = [
+            genre1: [
+                {book1},
+                {book2}
+            ],       
+            genre2: [
+                {book1}.
+                {book2}
+            ]
+        
+        ]
+    
+    '''
+           
 
     # Return results to template
     return render(request, 'search_results.html', {
