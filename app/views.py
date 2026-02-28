@@ -72,8 +72,9 @@ def search(request):
     if search_type == 'title':
         for index, genre in LIBRARY.items():
             for book_id, book in genre.items():
-             match = re.search(search_query, book["name"])
+             match = re.search(search_query, book["name"], re.IGNORECASE)
              if match:
+                book['genre'] = index 
                 results.append(book)
 
     if search_type == 'genre':
@@ -85,7 +86,8 @@ def search(request):
                   'books': []
                }
                # results.append(f"{genre_name}") # use multi-line to match pseudocode
-               for book in LIBRARY[genre_name].values():     
+               for book in LIBRARY[genre_name].values():
+                   book['genre'] = genre_name
                    genre_obj['books'].append(book)
 
                results.append(genre_obj) 
