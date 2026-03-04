@@ -15,5 +15,6 @@ app_name = 'library'
 
 urlpatterns = [
        path('', views.home, name='home'),
-       path('search', views.search, name='search') 
+     #  path('search', views.search, name='search'),
+       path('api/search', views.api_search, name='api_search'),
 ]

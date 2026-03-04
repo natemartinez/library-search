@@ -2,8 +2,9 @@
 Views for the library search application.
 """
 from django.shortcuts import render
+from django.http import JsonResponse
 import re
-
+import asyncio
 # Library data (from main.py prototype)
 # Later, this needs to be a database model in `models.py`
 # from an API maybe?
@@ -46,76 +47,61 @@ def home(request):
     })
 
 
-def search(request):
+
+def api_search(request):
     """
-    Handle search requests and display results.
+    Return search results as JSON for asynchronous requests.
     """
-    # Get search parameters from the request
     search_query = request.GET.get('q', '')
-    search_type = request.GET.get('type', 'title')  # 'title' or 'genre', 'title' is just the DEFAULT
 
-    print(f"🔍 Search query: '{search_query}'")
-    print(f"🔍 Search type: '{search_type}'")
+    genre_results = []
 
-    results = []
+    for genre_name in LIBRARY.keys():
+        match = re.search(re.escape(search_query), genre_name, re.IGNORECASE)
+        if match:
+            genre_results.append(genre_name)
+
+    print(genre_results)
+    results = {
+        'query': search_query,
+        'genres': genre_results,
+    }
 
 
-    # TODO(human): Implement the search logic
-    # Context: You already have find_books() and find_genre() functions in main.py
-    # Your Task: Adapt that logic here to search the LIBRARY dictionary
-    # Guidance:
-    # - If search_type is 'title', search through all book names (use re.search for partial matching)
-    # - If search_type is 'genre', search through genre names and return all books in matching genres
-    # - Store results as a list of dictionaries: [{'name': '...', 'author': '...', 'genre': '...'}, ...]
-    # - Remember to handle the case when search_query is empty
+    return JsonResponse(results)
 
-    if search_type == 'title':
-        for index, genre in LIBRARY.items():
-            for book_id, book in genre.items():
-             match = re.search(search_query, book["name"], re.IGNORECASE)
-             if match:
-                book['genre'] = index 
-                results.append(book)
+'''
+def genre_search(request):
+    """
+    Return search results as JSON for asynchronous requests.
+    """
+    search_query = request.GET.get('q', '')
 
-    if search_type == 'genre':
-       for genre_name in LIBRARY.keys():
-           match = re.search(search_query, genre_name, re.IGNORECASE)
-           if match: 
-               genre_obj = {
-                  'genre_name': genre_name,
-                  'books': []
-               }
-               # results.append(f"{genre_name}") # use multi-line to match pseudocode
-               for book in LIBRARY[genre_name].values():
-                   book['genre'] = genre_name
-                   genre_obj['books'].append(book)
+    fullResults = []
+    genre_results = []
+    book_results = []
 
-               results.append(genre_obj) 
-   
+    for genre_name in LIBRARY.keys():
+        match = re.search(search_query, genre_name, re.IGNORECASE)
+        if match:
+            genre_obj = {
+                'genre_name': genre_name,
+                'books': []
+            }
+            for book in LIBRARY[genre_name].values():
+                # make a shallow copy to avoid mutating LIBRARY
+                book_copy = book.copy()
+                book_copy['genre'] = genre_name
+                genre_obj['books'].append(book_copy)
+
+            genre_results.append(genre_obj)
+
+    results = {
+        'query': search_query,
+        'genres': fullResults,
+    }
     print(results)
 
-    '''
-        Results NEEDS TO CHANGE TO DISPLAY EACH GENRE AS A HEADING SEPARATOR:
-        This is what should be returned:
+    return JsonResponse(results)
 
-        results = [
-            genre1: [
-                {book1},
-                {book2}
-            ],       
-            genre2: [
-                {book1}.
-                {book2}
-            ]
-        
-        ]
-    
-    '''
-           
-
-    # Return results to template
-    return render(request, 'search_results.html', {
-        'query': search_query,
-        'search_type': search_type,
-        'results': results,
-    })
+'''
