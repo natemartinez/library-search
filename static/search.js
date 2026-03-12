@@ -22,53 +22,44 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderResults(data){
-        if(!data || !data.genres || data.genres.length === 0){
+        if(!data){
             resultsContainer.innerHTML = '<p>No results</p>';
             return;
         }
-
+    
         resultsContainer.innerHTML = '';
-        const genreBox = document.createElement('div');
+        const resultBox = document.createElement('div');
         const ul = document.createElement('ul');
 
-        data.genres.forEach(genre => {
-            const genreItem = document.createElement('li');
-            genreItem.className = 'quick-result-item';
-            genreItem.textContent = genre;
-            ul.appendChild(genreItem);
-        });
-        genreBox.appendChild(ul);
-        resultsContainer.appendChild(genreBox);
-    }
 
-/*
-FOR FULL RESULTS (WITH BOOKS):
-    function renderResults(data) {
-        resultsContainer.innerHTML = '';
-        if (!data || !data.genres || data.genres.length === 0) {
-            resultsContainer.innerHTML = '<p>No results</p>';
-            return;
+        if(data.genres && data.genres.length > 0) {
+            data.genres.forEach(genre => {
+                const genreItem = document.createElement('li');
+                genreItem.className = 'quick-result-item';
+                genreItem.textContent = genre;
+                ul.appendChild(genreItem);          
+            });
         }
 
-        data.genres.forEach(genre => {
-            const genreBox = document.createElement('div');
-            genreBox.className = 'result-item';
-            const h3 = document.createElement('h3');
-            h3.textContent = genre.genre_name;
-            genreBox.appendChild(h3);
-
-            const ul = document.createElement('ul');
-            genre.books.forEach(book => {
-                const li = document.createElement('li');
-                li.textContent = `${book.name} — ${book.author}`;
-                ul.appendChild(li);
+        
+        if(data.books && data.books.length > 0) {
+            data.books.forEach(book => {
+                const bookItem = document.createElement('li');
+                bookItem.className = 'quick-result-item';
+                bookItem.textContent = `${book.name} — ${book.author}`;
+                console.log('Created book item:', bookItem.textContent);
+                ul.appendChild(bookItem);
             });
+        } else {
+            console.log('No books found');
+        }
+        
 
-            genreBox.appendChild(ul);
-            resultsContainer.appendChild(genreBox);
-        });
+        resultBox.appendChild(ul);
+        resultBox.className = 'quick-results-container';
+        resultsContainer.appendChild(resultBox);
     }
-*/
+
     searchBar.addEventListener('input', (e) => {
         clearTimeout(timeout);
         timeout = setTimeout(() => {
@@ -83,7 +74,11 @@ FOR FULL RESULTS (WITH BOOKS):
             url.search = new URLSearchParams({ q: currentValue }).toString();
             fetchAndRender(url.toString());
         }, 100);
-    })
+    });
+
+
+
+
 
     // Once the genres appear, they should be clickable -> sends user to genre page
 
