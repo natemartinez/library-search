@@ -3,27 +3,33 @@
 {% block title %}Search Results - Library Search{% endblock %}
 
 {% block content %}
-<div>
-    <a href="{% url 'library:home' %}" style="text-decoration: none;">← Back to Search</a>
+<div class="container">
+    {% include "includes/sidebar.html" %}
+    
+    <div class="main-content">
+        <div>
+            <a href="{% url 'library:home' %}" style="text-decoration: none;">← Back to Search</a>
+        </div>
+
+        <h2>Search Results</h2>
+        <p>Searching for: <strong>{{ query }}</strong></p>
+
+        {% if results %}
+            <p>Found {{ results|length }} book(s):</p>
+
+               {% for book in results %}
+                  <div class="result-item">
+                     <h3>{{ book.name }}</h3>
+                     <p><strong>Author:</strong> {{ book.author }}</p>
+                     <p><strong>Genre(s):</strong> {{ book.genre }}</p>
+                   </div>
+               {% endfor %}
+        {% else %}
+
+            <p style="color: #666; font-style: italic;">
+                No books found. Try a different search term!
+            </p>
+        {% endif %}
+    </div>
 </div>
-
-<h2>Search Results</h2>
-<p>Searching for: <strong>{{ query }}</strong></p>
-
-{% if results %}
-    <p>Found {{ results|length }} book(s):</p>
-
-       {% for book in results %}
-          <div class="result-item">
-             <h3>{{ book.name }}</h3>
-             <p><strong>Author:</strong> {{ book.author }}</p>
-             <p><strong>Genre(s):</strong> {{ book.genre }}</p>
-           </div>
-       {% endfor %}
-{% else %}
-
-    <p style="color: #666; font-style: italic;">
-        No books found. Try a different search term!
-    </p>
-{% endif %}
 {% endblock %}

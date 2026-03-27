@@ -46,7 +46,11 @@ def home(request):
         'genres': LIBRARY.keys()
     })
 
-
+def sidebar(request):
+    """
+    Display the sidebar page.
+    """
+    return render(request, 'sidebar.html')
 
 def api_search(request):
 
