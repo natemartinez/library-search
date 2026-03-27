@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const resultBox = document.createElement('div');
         const ul = document.createElement('ul');
 
-
         if(data.genres && data.genres.length > 0) {
             data.genres.forEach(genre => {
                 const genreItem = document.createElement('li');
@@ -40,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 ul.appendChild(genreItem);          
             });
         }
-
         
         if(data.books && data.books.length > 0) {
             data.books.forEach(book => {
@@ -52,8 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         } else {
             console.log('No books found');
-        }
-        
+        }   
 
         resultBox.appendChild(ul);
         resultBox.className = 'quick-results-container';
@@ -75,11 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fetchAndRender(url.toString());
         }, 100);
     });
-
-
-
-
-
     // Once the genres appear, they should be clickable -> sends user to genre page
 
     form.addEventListener('submit', function (e) {
@@ -95,4 +87,6 @@ document.addEventListener('DOMContentLoaded', function () {
         url.search = params.toString();
         fetchAndRender(url.toString());
     });
+
+
 });

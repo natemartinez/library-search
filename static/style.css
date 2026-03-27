@@ -38,7 +38,7 @@ body {
     .container {
         flex-direction: column;
     }
-    
+
     .sidebar {
         width: 100%;
         position: static;
@@ -51,27 +51,25 @@ h1 { color: #333; }
     position: relative;
     top: 0;
     left: 0;
-    margin:0;
+    margin: 0;
     border-radius: 8px;
 }
-.search-form{
-    width: 400px;
-}
+
 @media screen and (max-width: 768px) {
   .search-form-box {
     position: absolute;
     top: 0;
     left: 0;
-    margin:0;
-    padding: 10px;
+    width: 30%;
+    margin: 0;
     border-radius: 8px;
   }
-  .search-form{
-    width: 400px;
+  .search-form {
+    width: 425px;
   }
 }
 
-.radio-dot{
+.radio-dot {
     display: none;
 }
 .radio-btn span {
@@ -96,35 +94,68 @@ h1 { color: #333; }
     border-radius: 4px;
 }
 
-#quick-results{
+#quick-results {
     position: relative;
-
 }
-#quick-results ul{
+#quick-results ul {
     margin: 0;
     padding: 5px;
     list-style: none;
 }
-.quick-result-item{
+.quick-result-item {
     cursor: pointer;
     margin: 5px;
     font-size: 1.25em;
 }
-.quick-result-item:hover{
+.quick-result-item:hover {
     background: #f0f0f0;
 }
 
-#sidebar-wrapper{
+#sidebar-wrapper {
     position: fixed;
     bottom: 0;
     left: 0;
 }
 
-.sidebar-link{
+.sidebar-link {
     text-decoration: none;
     color: #555;
     list-style: none;
 }
-.sidebar-link:hover{
+.sidebar-link:hover {
     color: #333;
 }
+
+.carousel-container {
+    margin: 5em;
+}
+.genre-row {
+    margin: 30px 0;
+}
+.genre-title {
+    margin-bottom: 10px;
+}
+.book-shelf {
+    display: flex;
+    overflow-x: auto;
+    gap: 50px;
+    padding-bottom: 10px;
+}
+.book-card {
+    width: 100px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.book-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+.book-info {
+    padding: 8px;
+}
+.book-title { font-weight: bold; margin: 0 0 4px; font-size: 0.6em; }
+.book-author { color: #666; margin: 0 0 4px; font-size: 0.6em; }
+.book-genre { color: #999; margin: 0; font-size: 0.6em; }
