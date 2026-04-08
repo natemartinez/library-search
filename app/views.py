@@ -4,10 +4,29 @@ Views for the library search application.
 from django.shortcuts import render
 from django.http import JsonResponse
 import re
-import asyncio
+
+# Spine color palette per genre — bg, accent stripe, text, muted text
+GENRE_SPINE_COLORS = {
+    'Science Fiction':  {'bg': '#1A1A2E', 'accent': '#3C3489', 'text': '#AFA9EC', 'muted_text': '#4A4060'},
+    'Fantasy':          {'bg': '#1A2E1C', 'accent': '#2D5E3A', 'text': '#5DCAA5', 'muted_text': '#2A4A30'},
+    'Fiction':          {'bg': '#2A1A10', 'accent': '#993C1D', 'text': '#F09595', 'muted_text': '#5A2020'},
+    'Mystery':          {'bg': '#1C1810', 'accent': '#854F0B', 'text': '#EF9F27', 'muted_text': '#5A4A20'},
+    'Romance':          {'bg': '#2A1020', 'accent': '#72243E', 'text': '#F0A5C5', 'muted_text': '#5A2040'},
+    'Horror':           {'bg': '#1A0A0A', 'accent': '#712B13', 'text': '#E87070', 'muted_text': '#4A1A1A'},
+    'Non-Fiction':      {'bg': '#1C2010', 'accent': '#3B6D11', 'text': '#8FCA5A', 'muted_text': '#2A4010'},
+    'Biography':        {'bg': '#202020', 'accent': '#444441', 'text': '#AAAAAA', 'muted_text': '#444441'},
+    'Thriller':         {'bg': '#0A0A1C', 'accent': '#185FA5', 'text': '#7DB8F0', 'muted_text': '#1A2A4A'},
+    'Historical Fiction':{'bg': '#1C180A', 'accent': '#7A6210', 'text': '#D4B85A', 'muted_text': '#4A3A10'},
+}
+
+# Width/height pairs (px) for the visual bookshelf — one per genre slot
+SPINE_DIMENSIONS = [
+    (17, 67), (21, 56), (14, 76), (18, 50), (16, 78),
+    (22, 61), (14, 53), (18, 70), (17, 59), (20, 81),
+]
+
 # Library data (from main.py prototype)
 # Later, this needs to be a database model in `models.py`
-# from an API maybe?
 LIBRARY = {
     'Science Fiction': {
         'book1': {
@@ -431,11 +450,184 @@ LIBRARY = {
     },
 }
 
-def home(request):
+def _build_currently_reading():
+    """Shared context for the currently-reading book (used by Home and The Desk)."""
+    genres = list(LIBRARY.items())
+    first_genre, first_books = genres[0]
+    first_book = list(first_books.values())[0]
+    cr_colors = GENRE_SPINE_COLORS.get(first_genre, {})
+    return {
+        'name': first_book['name'],
+        'author': first_book['author'],
+        'chapter': 7,
+        'total_chapters': 20,
+        'chapter_title': 'The Secret to Self-Control',
+        'chapter_quote': "It is easier to practice restraint when you don\u2019t have to use it very often.",
+        'page': 94,
+        'total_pages': 271,
+        'progress': 35,
+        'title_abbr': ' '.join(first_book['name'].upper().split()[:3]),
+        'author_abbr': first_book['author'].upper().split()[-1],
+        'bg': cr_colors.get('bg', '#1A2E1C'),
+        'accent': cr_colors.get('accent', '#C4842A'),
+        'text': cr_colors.get('text', '#9B7A3E'),
+    }
+
+def stacks(request):
+    genres = list(LIBRARY.items())
+    stacks = []
+    all_books = []
+
+    for i, (genre, books) in enumerate(genres):
+        colors = GENRE_SPINE_COLORS.get(genre, {'bg': '#1C1810', 'accent': '#854F0B', 'text': '#EF9F27', 'muted_text': '#5A4A20'})
+        w, h = SPINE_DIMENSIONS[i % len(SPINE_DIMENSIONS)]
+
+        # stacks: one spine per genre (first book only)
+        if i < len(SPINE_DIMENSIONS):
+            first_book = list(books.values())[0]
+            stacks.append({
+                'name': first_book['name'],
+                'author': first_book['author'],
+                'title_abbr': ' '.join(first_book['name'].upper().split()[:3]),
+                'author_abbr': first_book['author'].upper().split()[-1],
+                'width': w,
+                'height': h,
+                'is_current': i == 0,
+                **colors,
+            })
+
+        # all_books: every book in the library with genre + dimensions
+        for book in books.values():
+            all_books.append({
+                'name': book['name'],
+                'author': book['author'],
+                'genre': genre,
+                'title_abbr': ' '.join(book['name'].upper().split()[:3]),
+                'author_abbr': book['author'].upper().split()[-1],
+                'width': w,
+                'height': h,
+                **colors,
+            })
+
+    currently_reading = _build_currently_reading()
+
+    stats = {
+        'volumes': len(stacks),
+        'notes': 43,
+        'relics': 7,
+        'days_read': 12,
+        'in_progress': 2,
+    }
 
     return render(request, 'home.html', {
-        'library': LIBRARY
+        'stacks': stacks,
+        'currently_reading': currently_reading,
+        'stats': stats,
+        'all_books': all_books,
+        'total': len(all_books),
+        'genres': list(LIBRARY.keys()),
     })
+
+def storyboard(request):
+    connections = [
+        {
+            'book_a': 'The Hunger Games',
+            'book_b': 'Dune',
+            'tag': 'Power & Control',
+            'note': 'Both explore authoritarian regimes and rebellion.',
+            'confirmed': True,
+        },
+        {
+            'book_a': 'The Hunger Games',
+            'book_b': '1984',
+            'tag': 'Dystopian Society',
+            'note': 'Both depict oppressive governments and surveillance.',
+            'confirmed': False,
+        },
+    ]
+    return render(request, 'storyboard.html', {'connections': connections})
+
+def acquisitions(request):
+    new_arrivals = []
+    for genre, books in LIBRARY.items():
+        colors = GENRE_SPINE_COLORS.get(genre, {'bg': '#1C1810', 'accent': '#854F0B', 'text': '#EF9F27', 'muted_text': '#5A4A20'})
+        for book in list(books.values())[:2]:
+            new_arrivals.append({
+                'name': book['name'],
+                'author': book['author'],
+                'title_abbr': ' '.join(book['name'].upper().split()[:3]),
+                'author_abbr': book['author'].upper().split()[-1],
+                **colors,
+            })
+    return render(request, 'acquisitions.html', {'new_arrivals': new_arrivals})
+
+def build_library(request):
+    all_books = []
+    for i, (genre, books) in enumerate(LIBRARY.items()):
+        colors = GENRE_SPINE_COLORS.get(genre, {'bg': '#1C1810', 'accent': '#854F0B', 'text': '#EF9F27', 'muted_text': '#5A4A20'})
+        w, h = SPINE_DIMENSIONS[i % len(SPINE_DIMENSIONS)]
+        for book in books.values():
+            all_books.append({
+                'name': book['name'],
+                'author': book['author'],
+                'genre': genre,
+                'title_abbr': ' '.join(book['name'].upper().split()[:3]),
+                'author_abbr': book['author'].upper().split()[-1],
+                'width': w,
+                'height': h,
+                **colors,
+            })
+    return render(request, 'library.html', {
+        'all_books': all_books,
+        'total': len(all_books),
+        'genres': list(LIBRARY.keys()),
+    })
+
+def the_desk(request):
+    bookmarks = [
+        {'icon': '🔍', 'name': 'The Magnifier',     'desc': 'Surfaces recurring patterns and motifs across all your annotations in this book.',      'state': 'act', 'label': 'Active'},
+        {'icon': '🧵', 'name': 'The Red Thread',     'desc': 'Links a passage in this book to an idea from another book in your library.',            'state': 'act', 'label': 'Active'},
+        {'icon': '📄', 'name': 'The Blank Page',     'desc': 'Sends a chapter prompt to your desk. Designed to be answered on paper first.',          'state': 'act', 'label': 'Active'},
+        {'icon': '✏️', 'name': 'The Marginalia',     'desc': 'Tag any passage: Question, Insight, Quote, or Contradiction.',                          'state': 'act', 'label': 'Active'},
+        {'icon': '🔒', 'name': 'The Lantern',        'desc': 'Log 10 annotations to discover this. Illuminates related books.',                       'state': 'prg', 'label': '7 / 10'},
+        {'icon': '🔒', 'name': 'The Pressed Flower', 'desc': 'Finish your first book to unlock memory prompts.',                                      'state': 'lk',  'label': 'Locked'},
+        {'icon': '🔒', 'name': 'The Cipher',         'desc': 'Write your first Desk entry to discover this concept-decoding tool.',                   'state': 'lk',  'label': 'Locked'},
+        {'icon': '🔒', 'name': 'The Seal',           'desc': 'Finish your first book to unlock the closing ritual and formal archive entry.',          'state': 'lk',  'label': 'Locked'},
+    ]
+    return render(request, 'the_desk.html', {
+        'currently_reading': _build_currently_reading(),
+        'bookmarks': bookmarks,
+    })  
+
+def relics(request):
+    relics_list = [
+        {
+            'name': 'The Inkwell',
+            'icon': '🖋',
+            'origin': 'Found after writing three pages at the Desk in one session.',
+            'date': 'March 2026',
+            'found': True,
+        },
+        {
+            'name': 'The Dog-Ear',
+            'icon': '📖',
+            'hint': 'Complete your first paperback to find this.',
+            'found': False,
+        },
+        {
+            'name': 'The Foxed Page',
+            'icon': '🍂',
+            'hint': 'Connect three books in the Archive to find this.',
+            'found': False,
+        },
+        {
+            'name': 'The Letter Opener',
+            'icon': '✉️',
+            'hint': 'Seal your first book to find this.',
+            'found': False,
+        },
+    ]
+    return render(request, 'relics.html', {'relics': relics_list})
 
 def sidebar(request):
     """
@@ -465,20 +657,6 @@ def api_search(request):
         'query': search_query,
         'genres': genre_results,
         'books': book_results
-    }
-
-    return JsonResponse(results)
-
-
-def book_carousel(request):
-    all_books = []
-
-    for genre_name, books in LIBRARY.items():
-        for book in books.items():
-            all_books.append(book)
-    
-    results = {
-        'books': all_books
     }
 
     return JsonResponse(results)

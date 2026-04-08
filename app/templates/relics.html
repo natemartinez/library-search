@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen">
+
+  {% include 'includes/sidebar.html' %}
+
+  <main class="content">
+
+    <!-- Header -->
+    <div class="hdr">
+      <div>
+        <div class="t1" style="font-size:20px">RELICS</div>
+        <div class="sub">MINDLORE · YOUR DISCOVERIES</div>
+      </div>
+    </div>
+
+    <!-- Intro nudge -->
+    <div class="nudge">"Relics are not trophies. They are things found along the way — marks of depth, not speed."</div>
+
+    <!-- Cabinet -->
+    <div class="section-lbl" style="margin-top:16px">
+      <span>THE CABINET</span>
+      <span style="color:#4A4030;font-size:10px">{% for r in relics %}{% if r.found %}1{% endif %}{% endfor %} found · {{ relics|length }} total</span>
+    </div>
+
+    <div class="relics-grid">
+      {% for relic in relics %}
+      <div class="relic-card {% if relic.found %}found{% else %}locked{% endif %}">
+        <span class="relic-icon">{{ relic.icon }}</span>
+        <div style="font-size:13px;color:#C4B07A;font-weight:bold;margin-bottom:6px">{{ relic.name }}</div>
+        {% if relic.found %}
+          <div style="font-size:11px;color:#5A4A3A;line-height:1.5;font-style:italic">{{ relic.origin }}</div>
+          {% if relic.date %}
+          <div style="font-size:10px;color:#3A3020;margin-top:6px">{{ relic.date }}</div>
+          {% endif %}
+        {% else %}
+          <div style="font-size:11px;color:#3A3020;line-height:1.5;font-style:italic">{{ relic.hint }}</div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div style="grid-column:1/-1;padding:32px 0;text-align:center;color:#3A3020;font-style:italic;font-size:13px">
+        No relics found yet. Keep reading deeply.
+      </div>
+      {% endfor %}
+    </div>
+
+  </main>
+
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen">
+
+  {% include 'includes/sidebar.html' %}
+  <!-- ── Main Content ──────────────────────────── -->
+  <main class="content">
+
+    <!-- Header -->
+    <div class="hdr">
+      <a href="{% url 'mind_lore:home' %}" style="text-decoration:none;font-size:12px;color:#4A4030;display:block;margin-bottom:10px">← The Stacks</a>
+      <div class="hdr-row">
+        <div>
+          <div style="font-size:20px;font-weight:bold;letter-spacing:.08em">ACQUISITIONS</div>
+          <div style="font-size:10px;color:#3A3020;letter-spacing:.2em;margin-top:1px">THE INTAKE DESK</div>
+        </div>
+        <button class="acq-add-btn">+ Manual add</button>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
+        <circle cx="5.5" cy="5.5" r="4" stroke="#4A4030" stroke-width="1.2"/>
+        <line x1="8.5" y1="8.5" x2="11.5" y2="11.5" stroke="#4A4030" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <input id="acq-q" data-api-url="{% url 'mind_lore:api_search' %}" placeholder="Search by title, author, or subject…" />
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="ftag on">All</div>
+      <div class="ftag off">Connected</div>
+      <div class="ftag off">Non-fiction</div>
+      <div class="ftag off">Fiction</div>
+      <div class="ftag off">Philosophy</div>
+    </div>
+
+    <!-- Lantern notice -->
+    <div class="section-lbl">
+      <span>SUGGESTED FOR YOU</span>
+      <span style="color:#4A4030;font-size:10px">The Lantern · 7/10</span>
+    </div>
+    <div class="lantern-bar">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+        <rect x="5" y="2" width="6" height="9" rx="2" fill="none" stroke="#6A5A3A" stroke-width="1"/>
+        <line x1="8" y1="0" x2="8" y2="2" stroke="#6A5A3A" stroke-width="1"/>
+        <path d="M6 11 L5 14 L11 14 L10 11" fill="none" stroke="#6A5A3A" stroke-width="1"/>
+        <circle cx="8" cy="7" r="1.5" fill="#6A5A3A" opacity=".5"/>
+      </svg>
+      <div style="font-size:11px;color:#4A4030;line-height:1.5;flex:1">3 more annotations unlock The Lantern — then suggestions will be drawn from your own Archive.</div>
+    </div>
+
+    <!-- Book list -->
+    <div class="section-lbl" style="margin-top:10px"><span>NEW ARRIVALS</span></div>
+    <div class="scroll" id="acq-results">
+      {% for book in new_arrivals %}
+      <div class="book-card">
+        <div class="bc-top">
+          <div class="spine" style="width:48px;height:70px;background:{{ book.bg }};border-left:4px solid {{ book.accent }};padding:5px 4px">
+            <div style="font-size:7px;color:{{ book.text }};text-align:center;line-height:1.3;font-weight:bold">{{ book.title_abbr }}</div>
+            <div style="width:24px;height:1px;background:rgba(196,132,42,0.2)"></div>
+            <div style="font-size:7px;color:{{ book.muted_text }}">{{ book.author_abbr }}</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:17px;font-weight:bold;margin-bottom:3px">{{ book.name }}</div>
+            <div style="font-size:11px;margin-bottom:8px" class="sec">{{ book.author }}</div>
+            <div style="font-size:11px;color:#4A4030;font-style:italic;line-height:1.5">No Archive connection yet — add your first annotation to see how it fits.</div>
+          </div>
+        </div>
+        <div class="bc-bot">
+          <div class="fmt">
+            <button class="fmt-btn on">E-book</button>
+            <button class="fmt-btn off">Paperback</button>
+          </div>
+          <button class="acquire">Acquire →</button>
+        </div>
+      </div>
+      {% empty %}
+      <div style="font-size:13px;color:#4A4030;text-align:center;padding:24px 0;font-style:italic">No books in the library yet.</div>
+      {% endfor %}
+    </div>
+
+  </main><!-- .content -->
+
+</div><!-- .screen -->
+
+<script>
+(function () {
+    const searchInput = document.getElementById('acq-q');
+    const resultsContainer = document.getElementById('acq-results');
+    if (!searchInput || !resultsContainer) return;
+
+    const apiUrl = searchInput.dataset.apiUrl;
+    const originalHTML = resultsContainer.innerHTML;
+    let timeout;
+
+    const SPINE_COLORS = [
+        { bg: '#1A1A2E', accent: '#3C3489', text: '#AFA9EC', muted: '#4A4060' },
+        { bg: '#1A2E1C', accent: '#2D5E3A', text: '#5DCAA5', muted: '#2A4A30' },
+        { bg: '#2A1A10', accent: '#993C1D', text: '#F09595', muted: '#5A2020' },
+        { bg: '#1C1810', accent: '#854F0B', text: '#EF9F27', muted: '#5A4A20' },
+        { bg: '#0A0A1C', accent: '#185FA5', text: '#7DB8F0', muted: '#1A2A4A' },
+    ];
+
+    function renderBook(book, idx) {
+        const c = SPINE_COLORS[idx % SPINE_COLORS.length];
+        const titleAbbr = book.name.toUpperCase().split(' ').slice(0, 3).join(' ');
+        const authorAbbr = book.author.toUpperCase().split(' ').pop();
+        return `
+        <div class="book-card">
+          <div class="bc-top">
+            <div class="spine" style="width:48px;height:70px;background:${c.bg};border-left:4px solid ${c.accent};padding:5px 4px">
+              <div style="font-size:7px;color:${c.text};text-align:center;line-height:1.3;font-weight:bold">${titleAbbr}</div>
+              <div style="width:24px;height:1px;background:rgba(196,132,42,0.2)"></div>
+              <div style="font-size:7px;color:${c.muted}">${authorAbbr}</div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:17px;font-weight:bold;margin-bottom:3px">${book.name}</div>
+              <div style="font-size:11px;margin-bottom:8px;color:#6A5A3A">${book.author}</div>
+              <div style="font-size:11px;color:#4A4030;font-style:italic;line-height:1.5">No Archive connection yet — add your first annotation to see how it fits.</div>
+            </div>
+          </div>
+          <div class="bc-bot">
+            <div class="fmt">
+              <button class="fmt-btn on">E-book</button>
+              <button class="fmt-btn off">Paperback</button>
+            </div>
+            <button class="acquire">Acquire →</button>
+          </div>
+        </div>`;
+    }
+
+    function bindInteractions() {
+        resultsContainer.querySelectorAll('.fmt-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.parentElement.querySelectorAll('.fmt-btn').forEach(s => s.className = 'fmt-btn off');
+                this.className = 'fmt-btn on';
+            });
+        });
+        resultsContainer.querySelectorAll('.acquire').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const orig = this.textContent;
+                this.textContent = 'Added ✓';
+                this.style.cssText = 'background:rgba(45,94,58,0.2);color:#5DCAA5;border-color:rgba(45,94,58,0.4)';
+                setTimeout(() => { this.textContent = orig; this.style.cssText = ''; }, 1800);
+            });
+        });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(async () => {
+            const q = (e.target.value || '').trim();
+            if (q === '') {
+                resultsContainer.innerHTML = originalHTML;
+                bindInteractions();
+                return;
+            }
+            try {
+                const url = new URL(apiUrl, window.location.origin);
+                url.search = new URLSearchParams({ q }).toString();
+                const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                const data = await resp.json();
+                const books = data.books || [];
+                if (books.length === 0) {
+                    resultsContainer.innerHTML = '<div style="font-size:13px;color:#4A4030;text-align:center;padding:24px 0;font-style:italic">No books found.</div>';
+                } else {
+                    resultsContainer.innerHTML = books.map((b, i) => renderBook(b, i)).join('');
+                    bindInteractions();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }, 300);
+    });
+
+    document.querySelectorAll('.ftag').forEach(tag => {
+        tag.addEventListener('click', function () {
+            document.querySelectorAll('.ftag').forEach(t => t.className = 'ftag off');
+            this.className = 'ftag on';
+        });
+    });
+
+    bindInteractions();
+})();
+</script>
+{% endblock %}

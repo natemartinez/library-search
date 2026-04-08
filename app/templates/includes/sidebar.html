@@ -1,9 +1,23 @@
-<div id="sidebar">
-    <ul>
-       <li><a class="sidebar-link" href="{% url 'library:home' %}">Home</a></li>
-       <li><a class="sidebar-link" href="{% url 'library:home' %}">Search</a></li>
-       <li><a class="sidebar-link" href="{% url 'library:home' %}">Books</a></li>
-       <li><a class="sidebar-link" href="{% url 'library:home' %}">Authors</a></li>
-       <li><a class="sidebar-link" href="{% url 'library:home' %}">Genres</a></li>
-    </ul>
-</div>
+  <nav class="nav" id="sidebar">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+      <span class="toggle-icon">›</span>
+    </button>
+    <a href="{% url 'mind_lore:the_desk' %}" style="text-decoration:none;color:inherit">
+      <div class="ni"><div class="nd"></div><span class="ni-label">The Desk</span></div>
+    </a>    
+    <a href="{% url 'mind_lore:stacks' %}" style="text-decoration:none;color:inherit">
+      <div class="ni"><div class="nd"></div><span class="ni-label">Stacks</span></div>
+    </a>
+    <a href="{% url 'mind_lore:home' %}" style="text-decoration:none;color:inherit">
+      <div class="ni">
+        <div class="nd"></div>
+        <span class="ni-label">Library</span>
+      </div>
+    </a>
+    <a href="{% url 'mind_lore:storyboard' %}" style="text-decoration:none;color:inherit">
+      <div class="ni"><div class="nd"></div><span class="ni-label">Archive</span></div>
+    </a>
+    <a href="{% url 'mind_lore:relics' %}" style="text-decoration:none;color:inherit">
+      <div class="ni"><div class="nd"></div><span class="ni-label">Relics</span></div>
+    </a>
+  </nav>

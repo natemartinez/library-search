@@ -1,0 +1,36 @@
+<!-- Embla Carousel CDN (UMD build — no npm needed) -->
+<script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+
+<div class="embla" id="book-carousel">
+    <div class="embla__container">
+        {% for book in carousel_books %}
+        <div class="embla__slide">
+            <div class="book-card">
+                <strong>{{ book.name }}</strong>
+                <span>{{ book.author }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <!-- TODO(human): decide what to show when there are no books -->
+        <div class="embla__slide">
+            <div class="book-card">No books available</div>
+        </div>
+        {% endfor %}
+    </div>
+    <button class="embla__prev">&#8592;</button>
+    <button class="embla__next">&#8594;</button>
+</div>
+
+<script>
+    (function () {
+        var carouselNode = document.getElementById('book-carousel');
+        var embla = EmblaCarousel(carouselNode, { loop: false, align: 'start' });
+
+        carouselNode.querySelector('.embla__prev').addEventListener('click', function () {
+            embla.scrollPrev();
+        });
+        carouselNode.querySelector('.embla__next').addEventListener('click', function () {
+            embla.scrollNext();
+        });
+    })();
+</script>

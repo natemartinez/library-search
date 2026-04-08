@@ -1,161 +1,629 @@
+/* ── Reset & Base ────────────────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html { height: 100%; }
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f5f5f5;
+    font-family: 'EB Garamond', Georgia, 'Palatino Linotype', serif;
+    background-color: #1a160f;
+    min-height: 100vh;
 }
 
-.container {
-    display: flex;
-    max-width: 1200px;
+/* ── Candle Animation ─────────────────────────── */
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .88; }
+}
+.candle { animation: flicker 2.4s ease-in-out infinite; }
+
+/* ── Screen Shell ─────────────────────────────── */
+/* Mobile: single column, nav pinned to bottom via order */
+.screen {
+    width: 100%;
+    max-width: 480px;
     margin: 0 auto;
-    gap: 20px;
-    position: relative;
+    background: #0D0C08;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'EB Garamond', Georgia, 'Palatino Linotype', serif;
+    color: #E8D5A8;
 }
 
-#sidebar {
-    width: 250px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: fit-content;
-    position: sticky;
-    bottom: 0;
-    left: 0;
-}
-
-#main-content {
+/* ── Content wrapper (everything except the nav) ─ */
+.content {
+    order: 1;  /* above the nav on mobile */
     flex: 1;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-top: 30px;
 }
 
-@media screen and (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        position: static;
-    }
-}
-
-h1 { color: #333; }
-
-.search-form-box {
-    position: relative;
-    top: 0;
-    left: 0;
-    margin: 0;
-    border-radius: 8px;
-}
-
-@media screen and (max-width: 768px) {
-  .search-form-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 30%;
-    margin: 0;
-    border-radius: 8px;
-  }
-  .search-form {
-    width: 425px;
-  }
-}
-
-.radio-dot {
+/* ── Sidebar toggle (hidden on mobile) ────────── */
+.sidebar-toggle {
     display: none;
 }
-.radio-btn span {
+
+/* ── Toggle icon rotation ─────────────────────── */
+.toggle-icon {
     display: inline-block;
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    background: white;
+    transition: transform 0.25s ease;
+    line-height: 1;
 }
-.radio-btn input[type="radio"]:checked + span {
-    background: #333;
-    color: white;
-    border-color: #333;
+/* When expanded, rotate so › becomes ‹ */
+.nav:not(.collapsed) .toggle-icon {
+    transform: rotate(180deg);
 }
 
-.result-item {
-    padding: 15px;
-    margin: 10px 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+/* ── Typography helpers ───────────────────────── */
+.t1    { font-size: 22px; font-weight: bold; letter-spacing: .1em; }
+.sub   { font-size: 10px; color: #3A3020; letter-spacing: .2em; margin-top: 2px; }
+.amber { color: #C4842A; }
+.muted { color: #4A4030; }
+.sec   { color: #6A5A3A; }
+
+/* ── Header ───────────────────────────────────── */
+.hdr {
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid rgba(196, 132, 42, 0.08);
+}
+.hdr-home {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.hdr-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-#quick-results {
+/* ── Cards ────────────────────────────────────── */
+.card {
+    background: #100E09;
+    border-radius: 16px;
+    border: 1px solid rgba(196, 132, 42, 0.15);
+    padding: 18px;
+    margin: 14px 20px 0;
+}
+.card.amber-l {
+    border-left: 3px solid #C4842A;
+    border-radius: 0 16px 16px 16px;
+}
+
+/* ── Nudge Bar ────────────────────────────────── */
+.nudge {
+    margin: 10px 20px 0;
+    background: rgba(196, 132, 42, 0.05);
+    border-radius: 10px;
+    padding: 11px 14px;
+    border: 1px dashed rgba(196, 132, 42, 0.22);
+    font-size: 13px;
+    color: #6A5A3A;
+    line-height: 1.55;
+    font-style: italic;
+}
+
+/* ── Book Spine (base layout) ─────────────────── */
+.spine {
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 3px;
+}
+
+/* ── Pills ────────────────────────────────────── */
+.pill {
+    display: inline-block;
+    font-size: 11px;
+    border-radius: 9px;
+    padding: 4px 10px;
+    border: 1px solid;
+}
+.pill-a {
+    background: rgba(196, 132, 42, 0.12);
+    color: #C4842A;
+    border-color: rgba(196, 132, 42, 0.3);
+}
+
+/* ── Progress Bar ─────────────────────────────── */
+.pb {
+    height: 5px;
+    background: #2A2010;
+    border-radius: 2px;
+    overflow: hidden;
+}
+.pf {
+    height: 100%;
+    background: #2D5E3A;
+    border-radius: 2px;
+}
+
+/* ── Shelf spines (stacks visual) ─────────────── */
+.sp { border-radius: 2px 2px 0 0; }
+
+/* ── Section Label ────────────────────────────── */
+.section-lbl {
+    font-size: 10px;
+    color: #3A3020;
+    letter-spacing: .18em;
+    margin: 14px 20px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ── Stats row ────────────────────────────────── */
+.stats-row {
+    display: flex;
+    gap: 7px;
+    margin: 12px 20px 0;
+}
+.stat {
+    flex: 1;
+    background: #100E09;
+    border-radius: 9px;
+    padding: 11px 6px;
+    text-align: center;
+    border: 1px solid rgba(196, 132, 42, 0.07);
+}
+
+/* ── Bottom Nav (mobile) ──────────────────────── */
+.nav {
+    order: 2;  /* below content on mobile */
+    display: flex;
+    justify-content: space-around;
+    padding: 14px 8px 28px;
+    border-top: 1px solid rgba(196, 132, 42, 0.08);
+    margin-top: 12px;
+}
+.ni {
+    text-align: center;
+    font-size: 10px;
+    color: #3A3020;
+    opacity: 0.9;
+}
+.ni.on {
+    opacity: 1;
+    color: #C4842A;
+}
+.nd {
+    width: 26px;
+    height: 15px;
+    border-radius: 4px;
+    background: #3A3020;
+    margin: 0 auto 4px;
+}
+
+/* ── Center nav action button (mobile FAB) ────── */
+.ni-center {
     position: relative;
+    background: rgba(196, 132, 42, 0.14);
+    border: 1px solid rgba(196, 132, 42, 0.45);
+    border-radius: 16px;
+    padding: 5px 13px;
+    transform: translateY(-12px);
+    color: #C4842A !important;
+    opacity: 1 !important;
+    box-shadow: 0 4px 18px rgba(196, 132, 42, 0.18);
 }
-#quick-results ul {
-    margin: 0;
-    padding: 5px;
-    list-style: none;
+.ni-center .nd {
+    background: #C4842A;
 }
+
+/* ── Acquisitions: header button ──────────────── */
+.acq-add-btn {
+    font-size: 11px;
+    color: #C4842A;
+    border: 1px solid rgba(196, 132, 42, 0.25);
+    border-radius: 16px;
+    padding: 5px 13px;
+    cursor: pointer;
+    font-family: 'EB Garamond', Georgia, serif;
+    background: transparent;
+}
+
+/* ── Acquisitions: search bar ─────────────────── */
+.search {
+    margin: 12px 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #100E09;
+    border-radius: 20px;
+    border: 1px solid rgba(196, 132, 42, 0.2);
+    padding: 10px 16px;
+}
+.search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 14px;
+    color: #E8D5A8;
+    width: 100%;
+    caret-color: #C4842A;
+}
+.search input::placeholder { color: #3A3020; }
+
+/* ── Acquisitions: filter tags ────────────────── */
+.filters {
+    display: flex;
+    gap: 7px;
+    padding: 10px 20px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ftag {
+    font-size: 11px;
+    padding: 5px 13px;
+    border-radius: 16px;
+    border: 1px solid;
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: 'EB Garamond', Georgia, serif;
+}
+.ftag.on  { background: rgba(196, 132, 42, 0.12); color: #C4842A; border-color: rgba(196, 132, 42, 0.35); }
+.ftag.off { color: #4A4030; border-color: rgba(196, 132, 42, 0.1); }
+
+/* ── Acquisitions: lantern bar ────────────────── */
+.lantern-bar {
+    margin: 0 20px 10px;
+    background: rgba(196, 132, 42, 0.06);
+    border-radius: 9px;
+    padding: 10px 14px;
+    border: 1px dashed rgba(196, 132, 42, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ── Acquisitions: scrollable book list ───────── */
+.scroll {
+    overflow-y: auto;
+    max-height: 520px;
+    padding: 0 20px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: #3A3020 transparent;
+}
+
+/* ── Acquisitions: book cards ─────────────────── */
+.book-card {
+    background: #100E09;
+    border-radius: 14px;
+    border: 1px solid rgba(196, 132, 42, 0.12);
+    padding: 16px;
+    margin-bottom: 11px;
+}
+.book-card:hover { border-color: rgba(196, 132, 42, 0.28); }
+
+.bc-top { display: flex; gap: 14px; margin-bottom: 12px; }
+.bc-bot { display: flex; justify-content: space-between; align-items: center; }
+
+.thread-tag {
+    display: inline-block;
+    font-size: 10px;
+    border-radius: 7px;
+    padding: 3px 10px;
+    background: rgba(90, 74, 165, 0.15);
+    color: #AFA9EC;
+    border: 1px solid rgba(90, 74, 165, 0.3);
+    margin-bottom: 7px;
+}
+
+.connection {
+    font-size: 11px;
+    color: #4A4030;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 11px;
+    padding: 6px 10px;
+    background: rgba(196, 132, 42, 0.04);
+    border-radius: 6px;
+    border-left: 2px solid rgba(196, 132, 42, 0.2);
+}
+
+/* ── Acquisitions: format + acquire buttons ───── */
+.fmt { display: flex; gap: 6px; }
+
+.fmt-btn {
+    font-size: 10px;
+    padding: 5px 11px;
+    border-radius: 8px;
+    border: 1px solid;
+    cursor: pointer;
+    font-family: 'EB Garamond', Georgia, serif;
+    background: transparent;
+}
+.fmt-btn.on  { background: rgba(196, 132, 42, 0.12); color: #C4842A; border-color: rgba(196, 132, 42, 0.35); }
+.fmt-btn.off { color: #4A4030; border-color: rgba(196, 132, 42, 0.1); }
+
+.acquire {
+    font-size: 11px;
+    padding: 6px 16px;
+    border-radius: 9px;
+    background: rgba(196, 132, 42, 0.12);
+    color: #C4842A;
+    border: 1px solid rgba(196, 132, 42, 0.35);
+    cursor: pointer;
+    font-family: 'EB Garamond', Georgia, serif;
+}
+.acquire:hover { background: rgba(196, 132, 42, 0.2); }
+
+/* ── Search result items ──────────────────────── */
 .quick-result-item {
     cursor: pointer;
     margin: 5px;
-    font-size: 1.25em;
+    font-size: 13px;
+    color: #E8D5A8;
+    padding: 7px 10px;
+    border-radius: 8px;
 }
-.quick-result-item:hover {
-    background: #f0f0f0;
+.quick-result-item:hover { background: rgba(196, 132, 42, 0.08); }
+
+/* ══ DESKTOP SIDEBAR LAYOUT (≥ 768px) ══════════ */
+@media (min-width: 768px) {
+
+    /* Screen becomes a full-width flex row */
+    .screen {
+        flex-direction: row;
+        max-width: none;
+        align-items: flex-start;
+    }
+
+    /* Sidebar: sticky, full-height, collapsible */
+    .nav {
+        order: 1;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        width: 200px;
+        min-width: 200px;
+        min-height: 100vh;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        padding: 20px 0 28px;
+        border-top: none;
+        border-right: 1px solid rgba(196, 132, 42, 0.08);
+        margin-top: 0;
+        gap: 2px;
+        overflow: hidden;
+        transition: width 0.25s ease, min-width 0.25s ease;
+    }
+
+    .nav.collapsed {
+        width: 68px;
+        min-width: 68px;
+    }
+
+    /* Main content: centered, scrollable */
+    .content {
+        order: 2;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    /* Nav items: horizontal row (icon + label) */
+    .ni {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 20px;
+        text-align: left;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+        border-radius: 0;
+    }
+    .ni:hover { background: rgba(196, 132, 42, 0.05); }
+
+    /* Icon indicator: left-aligned in row */
+    .nd { margin: 0; flex-shrink: 0; }
+
+    /* Collapsed state: center icons, hide labels */
+    .nav.collapsed .ni {
+        justify-content: center;
+        padding: 12px 0;
+    }
+    .nav.collapsed .ni-label { display: none; }
+
+    /* Toggle button: visible on desktop only */
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        align-self: flex-end;
+        margin: 0 12px 16px;
+        width: 28px;
+        height: 28px;
+        background: rgba(196, 132, 42, 0.08);
+        border: 1px solid rgba(196, 132, 42, 0.2);
+        border-radius: 6px;
+        color: #C4842A;
+        cursor: pointer;
+        font-size: 16px;
+        font-family: 'EB Garamond', Georgia, serif;
+        transition: background 0.15s ease;
+        flex-shrink: 0;
+    }
+    .sidebar-toggle:hover { background: rgba(196, 132, 42, 0.15); }
+
+    /* Collapsed: center the toggle button too */
+    .nav.collapsed .sidebar-toggle {
+        align-self: center;
+        margin: 0 auto 16px;
+    }
+
+    /* Center nav button: vertically centered in the sidebar */
+    .ni-center {
+        margin-top: auto;
+        margin-bottom: auto;
+        background: rgba(196, 132, 42, 0.1);
+        border-left: 3px solid #C4842A;
+        border-radius: 0;
+        padding: 14px 20px;
+        transform: none;
+        box-shadow: none;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+    }
+    .ni-center:hover { background: rgba(196, 132, 42, 0.16); }
+    .nav.collapsed .ni-center { padding: 14px 0; border-left: 3px solid #C4842A; }
 }
 
-#sidebar-wrapper {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-}
-
-.sidebar-link {
-    text-decoration: none;
-    color: #555;
-    list-style: none;
-}
-.sidebar-link:hover {
-    color: #333;
-}
-
-.carousel-container {
-    margin: 5em;
-}
-.genre-row {
-    margin: 30px 0;
-}
-.genre-title {
-    margin-bottom: 10px;
-}
-.book-shelf {
-    display: flex;
-    overflow-x: auto;
-    gap: 50px;
-    padding-bottom: 10px;
-}
-.book-card {
-    width: 100px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+/* ── Desk: reading room mini-card ────────────── */
+.rr {
+    margin: 14px 20px 0;
+    background: #100E09;
+    border-radius: 18px;
+    border: 1px solid rgba(196, 132, 42, 0.3);
     overflow: hidden;
+}
+.rr-head {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(196, 132, 42, 0.1);
+}
+
+/* ── Desk: chapter position dots ─────────────── */
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
     flex-shrink: 0;
 }
-.book-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
+
+/* ── Desk & Archive: horizontal tabs ─────────── */
+.tabs {
+    display: flex;
+    gap: 7px;
+    padding: 12px 20px 10px;
+    border-bottom: 1px solid rgba(196, 132, 42, 0.08);
+    overflow-x: auto;
+    scrollbar-width: none;
 }
-.book-info {
-    padding: 8px;
+.tab {
+    padding: 6px 15px;
+    border-radius: 18px;
+    font-size: 12px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    color: #4A4030;
+    cursor: pointer;
 }
-.book-title { font-weight: bold; margin: 0 0 4px; font-size: 0.6em; }
-.book-author { color: #666; margin: 0 0 4px; font-size: 0.6em; }
-.book-genre { color: #999; margin: 0; font-size: 0.6em; }
+.tab.on {
+    background: #110F0A;
+    border-color: rgba(196, 132, 42, 0.35);
+    color: #C4842A;
+}
+
+/* ── Desk: bookmark tool rows ─────────────────── */
+.tr {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(196, 132, 42, 0.07);
+}
+.tr:last-child { border-bottom: none; }
+.tr.lk { opacity: 0.3; }
+
+.bmi {
+    width: 34px;
+    height: 46px;
+    background: rgba(196, 132, 42, 0.12);
+    border: 1px solid rgba(196, 132, 42, 0.3);
+    border-radius: 5px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.bmi.lk {
+    background: rgba(50, 40, 20, 0.3);
+    border-color: rgba(50, 40, 20, 0.3);
+}
+
+/* ── Status tags (active / progress / locked) ── */
+.stag {
+    font-size: 11px;
+    border-radius: 7px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border: 1px solid;
+}
+.stag.act { background: rgba(45, 94, 58, 0.2);   color: #5DCAA5; border-color: rgba(45, 94, 58, 0.3); }
+.stag.lk  { background: rgba(50, 40, 20, 0.15);  color: #4A4030; border-color: rgba(50, 40, 20, 0.2); }
+.stag.prg { background: rgba(196, 132, 42, 0.12); color: #C4842A; border-color: rgba(196, 132, 42, 0.2); }
+
+/* ── Archive: connection thread cards ─────────── */
+.arc-thread {
+    margin: 0 20px 12px;
+    background: #100E09;
+    border-radius: 14px;
+    border: 1px solid rgba(196, 132, 42, 0.15);
+    padding: 15px 16px;
+}
+.arc-thread.pending {
+    opacity: 0.45;
+    border-style: dashed;
+}
+.arc-books {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.arc-book-tag {
+    font-size: 11px;
+    color: #C4B07A;
+    background: rgba(196, 132, 42, 0.08);
+    border: 1px solid rgba(196, 132, 42, 0.2);
+    border-radius: 7px;
+    padding: 3px 10px;
+}
+.arc-divider { font-size: 14px; color: #3A3020; flex-shrink: 0; }
+
+/* ── Relics: display cabinet ──────────────────── */
+.relics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+    padding: 0 20px 24px;
+}
+.relic-card {
+    background: #100E09;
+    border-radius: 14px;
+    border: 1px solid rgba(196, 132, 42, 0.12);
+    padding: 20px 14px;
+    text-align: center;
+}
+.relic-card.found  { border-color: rgba(196, 132, 42, 0.35); }
+.relic-card.locked { opacity: 0.35; border-style: dashed; }
+.relic-icon { font-size: 28px; margin-bottom: 9px; display: block; }
+
+/* ── Narrow-phone tweaks ──────────────────────── */
+@media (max-width: 400px) {
+    .card        { margin: 12px 14px 0; padding: 14px; }
+    .nudge       { margin: 8px 14px 0; }
+    .section-lbl { margin: 12px 14px 6px; }
+    .stats-row   { margin: 10px 14px 0; }
+    .nav         { padding: 12px 4px 24px; }
+    .search      { margin: 10px 14px 0; }
+    .filters     { padding: 8px 14px 0; }
+    .scroll      { padding: 0 14px 14px; }
+    .lantern-bar { margin: 0 14px 8px; }
+}

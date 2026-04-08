@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="screen">
+
+  {% include 'includes/sidebar.html' %}
+
+  <main class="content">
+
+  </main>
+
+</div>
+
+<script>
+document.querySelectorAll('.ftag').forEach(tag => {
+    tag.addEventListener('click', function () {
+        document.querySelectorAll('.ftag').forEach(t => t.className = 'ftag off');
+        this.className = 'ftag on';
+    });
+});
+</script>
+{% endblock %}
