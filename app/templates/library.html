@@ -1,21 +1,168 @@
 {% extends "base.html" %}
 {% block content %}
+
+<style>
+  /* Fill remaining space after sidebar, no max-width cap */
+  .screen { height: 100vh; overflow: hidden; }
+  .content {
+    flex: 1 1 0;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #map { display: block; }
+</style>
+
 <div class="screen">
 
   {% include 'includes/sidebar.html' %}
 
   <main class="content">
-
+    <canvas id="map"></canvas>
   </main>
 
 </div>
 
 <script>
-document.querySelectorAll('.ftag').forEach(tag => {
-    tag.addEventListener('click', function () {
-        document.querySelectorAll('.ftag').forEach(t => t.className = 'ftag off');
-        this.className = 'ftag on';
-    });
-});
+  // ── Tile dimensions (base values; scaled down on small screens) ──────────
+  const BASE_TILE_W = 80;
+  const BASE_TILE_H = 40;
+  const BASE_WALL_H = 32;
+
+  let TILE_W = BASE_TILE_W;
+  let TILE_H = BASE_TILE_H;
+  let WALL_H = BASE_WALL_H;
+
+  // ── Map data ─────────────────────────────────────────────────────────────
+  const MAP = [
+    [1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1],
+  ];
+
+  const ROWS = MAP.length;
+  const COLS = MAP[0].length;
+
+  const canvas = document.getElementById('map');
+  const ctx    = canvas.getContext('2d');
+
+  let originX  = 0;
+  let originY  = 0;
+  let selected = null;
+
+  // ── Forward transform ────────────────────────────────────────────────────
+  function toScreen(col, row) {
+    return {
+      x: originX + (col - row) * (TILE_W / 2),
+      y: originY + (col + row) * (TILE_H / 2),
+    };
+  }
+
+  // ── Draw a single tile ───────────────────────────────────────────────────
+  function drawTile(col, row, type, isSelected) {
+    const { x, y } = toScreen(col, row);
+    const hw = TILE_W / 2;
+    const hh = TILE_H / 2;
+
+    const colors  = type === 1
+      ? { top: '#6b5f52', left: '#3d342a', right: '#4f4238' }
+      : { top: '#c8a97a', left: '#8a6f4e', right: '#a0845e' };
+    const highlight = { top: '#e8c87c', left: '#b89040', right: '#c8a050' };
+    const palette = isSelected ? highlight : colors;
+
+    if (type === 1) {
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y);
+      ctx.lineTo(x - hw, y + WALL_H);
+      ctx.lineTo(x,      y + hh + WALL_H);
+      ctx.lineTo(x,      y + hh);
+      ctx.closePath();
+      ctx.fillStyle = palette.left;
+      ctx.fill();
+      ctx.strokeStyle = '#1a1410'; ctx.lineWidth = 1; ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x + hw, y);
+      ctx.lineTo(x + hw, y + WALL_H);
+      ctx.lineTo(x,      y + hh + WALL_H);
+      ctx.lineTo(x,      y + hh);
+      ctx.closePath();
+      ctx.fillStyle = palette.right;
+      ctx.fill();
+      ctx.strokeStyle = '#1a1410'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x,      y - hh);
+    ctx.lineTo(x + hw, y);
+    ctx.lineTo(x,      y + hh);
+    ctx.lineTo(x - hw, y);
+    ctx.closePath();
+    ctx.fillStyle = palette.top;
+    ctx.fill();
+    ctx.strokeStyle = '#1a1410'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  function drawMap() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        drawTile(col, row, MAP[row][col],
+          selected && selected.col === col && selected.row === row);
+      }
+    }
+  }
+
+  function toGrid(mouseX, mouseY) {
+    const hw = TILE_W / 2, hh = TILE_H / 2;
+    const x  = (mouseX - originX) / hw;
+    const y  = (mouseY - originY) / hh;
+    const col = Math.round((x + y) / 2);
+    const row = Math.round((y - x) / 2);
+    if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return null;
+    return { col, row };
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const rect  = canvas.getBoundingClientRect();
+    const cell  = toGrid(e.clientX - rect.left, e.clientY - rect.top);
+    if (cell) { selected = cell; drawMap(); }
+  });
+
+  // ── Resize: measure the content container, not the full window ───────────
+  function resizeCanvas() {
+    const el      = canvas.parentElement;
+    canvas.width  = el.clientWidth;
+    canvas.height = el.clientHeight;
+
+    // Scale tiles so the full map width fits the canvas with a small margin
+    const mapNaturalW = (COLS + ROWS) * (BASE_TILE_W / 2);
+    const scale = Math.min(1, (canvas.width - 16) / mapNaturalW);
+    TILE_W = BASE_TILE_W * scale;
+    TILE_H = BASE_TILE_H * scale;
+    WALL_H = BASE_WALL_H * scale;
+
+    // Center the map vertically in the canvas
+    const mapHeight = (ROWS + COLS) * (TILE_H / 2) + WALL_H;
+    originX = canvas.width  / 2;
+    originY = (canvas.height - mapHeight) / 2 + TILE_H / 2;
+    drawMap();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+
+  // Re-draw when the sidebar toggle changes the content width
+  document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+    setTimeout(resizeCanvas, 260); // wait for the 0.25s CSS transition
+  });
+
+  resizeCanvas();
 </script>
+
 {% endblock %}
